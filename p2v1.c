@@ -15,9 +15,37 @@ typedef struct chain{
 	chain *previous; 
 } *link;
 
+typedef struct vert{
+	int id;
+	vert *next;
+}* point;
+
+typedef struct {
+	point head;
+	point tail;
+}BFList;
+
 link *list;
 int h;
 int w;
+BFList queue = (BFList) malloc(sizeof(BFList));
+
+void enQueue(int v){
+	point temp = (point) malloc(sizeof(point));
+	temp->id=v;
+	if (queue.head==NULL){queue.head=temp;}
+	else {queue.tail->next=temp;}
+	queue.tail=temp;
+}	
+
+int deQueue(){
+	point temp = queue.head;
+	if (temp==NULL) return NULL;
+	queue.head=temp->next;
+	int t=temp->id;
+	free(temp);
+	return t;
+}
 
 
 void addEdge(int s, int d, int p){
