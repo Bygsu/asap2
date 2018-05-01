@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct{			//Do we really need this?
 	int id;
@@ -12,13 +13,13 @@ typedef struct chain{
 	int value;
 	int nodeId;
 	int curr;
-	chain *next;
-	chain *previous; 
+	struct chain *next;
+	struct chain *previous; 
 } *link;
 
 typedef struct vert{
 	int id;
-	vert *next;
+	struct vert *next;
 }* point;
 
 typedef struct {
@@ -29,40 +30,35 @@ typedef struct {
 link *list;
 int h;
 int w;
-BFList queue = (BFList) malloc(sizeof(BFList));
+BFList* queue; 
 int * parentList;
 int * currentCapacity;
+char * position;
 
 void enQueue(int v){
 	point temp = (point) malloc(sizeof(point));
 	temp->id=v;
-	if (queue.head==NULL){queue.head=temp;}
-	else {queue.tail->next=temp;}
-	queue.tail=temp;
+	if (queue->head==NULL){queue->head=temp;}
+	else {queue->tail->next=temp;}
+	queue->tail=temp;
 }	
 
 int deQueue(){
-	point temp = queue.head;
+	point temp = queue->head;
 	if (temp==NULL) return NULL;
-	queue.head=temp->next;
+	queue->head=temp->next;
 	int t=temp->id;
 	free(temp);
 	return t;
 }
 
 int isEmpty(){
-	if (queue.head==NULL) return 1;
+	if (queue->head==NULL) return 1;
 	return 0;
 }
 
 
-void addEdge(int s, int d, int p){
-	moreEdge(s,d,p);
-	if (s<w*h && d<w*h){
-		moreEdge(d,s,p);
-	}
 
-}
 
 int min(int a, int b){
 	if (b<a) return b;
@@ -84,11 +80,19 @@ void moreEdge(int s, int d, int p){
 	return;
 }
 
+void addEdge(int s, int d, int p){
+	moreEdge(s,d,p);
+	if (s<w*h && d<w*h){
+		moreEdge(d,s,p);
+	}
+
+}
+
 
 int bfs(int start, int end){
 
-	memset(parentList, -1, sizeof(parentList));
-	memset(currentCapacity, 0, sizeof(currentCapacity));
+	memset(parentList, -1, sizeof(parentList[0])*((h*w)+2));
+	memset(currentCapacity, 0, sizeof(currentCapacity[0])*((h*w)+2));
 
 	enQueue(start);
 
@@ -132,10 +136,10 @@ int edmondsKarp(int start, int end){
 		while(curr!=start){
 			int previous=parentList[curr];
 			link temp = list[previous];
-			while(temp->id!=curr) temp = temp->next;
+			while(temp->nodeId!=curr) temp = temp->next;
 			temp->curr+=flow;
 			temp = list[curr];
-			while(temp->id!=previous) temp = temp->next;
+			while(temp->nodeId!=previous) temp = temp->next;
 			temp->curr-=flow;
 			curr=previous;
 
@@ -146,6 +150,17 @@ int edmondsKarp(int start, int end){
 
 }
 
+
+void dfs(int s){
+	position[s]='P';
+	link to = list[s];
+	while(to->nodeId!=NULL){
+		if (position[to->nodeId]=='C' && to->value!=to->curr){
+			dfs(to->nodeId);
+		}
+		to=to->next;
+	}
+}
 
 
 
@@ -159,8 +174,10 @@ int main(){
 	if (h<1 || w<1) return -1;
 
 	list = (link*) malloc(sizeof(link)*((h*w)+2));
-	parentList = (int) malloc(sizeof(int)*((h*w)+2));
-	currentCapacity = (int) malloc(sizeof(int)*((h*w)+2));
+	parentList = (int*) malloc(sizeof(int)*((h*w)+2));
+	currentCapacity = (int*) malloc(sizeof(int)*((h*w)+2));
+	queue = (BFList*) malloc(sizeof(BFList));
+	position = (char *) malloc(sizeof(char)*(h*w));
 
 	int i;
 	int j;
@@ -197,6 +214,33 @@ int main(){
 		}
 	}
 
+	edmondsKarp(h*w, h*w+1);
 
+	memset(position, 'C', sizeof(position[0])*(h*w)+2);
 
+	dfs(w*h);
+
+	position[h*w]='C';
+
+	int maxFlow=0;
+
+	for (i=0; i<(h*w)+2; i++){
+		link help = list[i];
+		while(help!=NULL){
+			if(position[i]!=position[help->nodeId]){
+				maxFlow+=help->value;
+			}
+			help=help->next;
+		}
+
+	}
+
+	printf("%d\n", maxFlow);
+	printf("\n");
+	for(i=0;i<h;i++){
+		for(j=0; j<w;j++){
+			printf("%s ", position[(i*w)+j]);
+		}
+		printf("\n");
+	}
 }
