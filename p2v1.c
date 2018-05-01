@@ -11,6 +11,7 @@ typedef struct{			//Do we really need this?
 typedef struct chain{
 	int value;
 	int nodeId;
+	int curr;
 	chain *next;
 	chain *previous; 
 } *link;
@@ -29,6 +30,8 @@ link *list;
 int h;
 int w;
 BFList queue = (BFList) malloc(sizeof(BFList));
+int * parentList;
+int * currentCapacity;
 
 void enQueue(int v){
 	point temp = (point) malloc(sizeof(point));
@@ -47,6 +50,11 @@ int deQueue(){
 	return t;
 }
 
+int isEmpty(){
+	if (queue.head==NULL) return 1;
+	return 0;
+}
+
 
 void addEdge(int s, int d, int p){
 	moreEdge(s,d,p);
@@ -54,6 +62,11 @@ void addEdge(int s, int d, int p){
 		moreEdge(d,s,p);
 	}
 
+}
+
+int min(int a, int b){
+	if (b<a) return b;
+	else return a;
 }
 
 
@@ -72,6 +85,70 @@ void moreEdge(int s, int d, int p){
 }
 
 
+int bfs(int start, int end){
+
+	memset(parentList, -1, sizeof(parentList));
+	memset(currentCapacity, 0, sizeof(currentCapacity));
+
+	enQueue(start);
+
+	parentList[start]=-2;
+	currentCapacity[start]=999;
+
+	while(!isEmpty()){
+		int curr = deQueue();
+		link to = list[curr];
+		while(to!=NULL){
+			int toId=to->nodeId;
+			if (parentList[toId]==-1){
+				if ((to->value - to->curr)>0){
+					parentList[toId]=curr;
+					currentCapacity[toId]=min(currentCapacity[curr],(to->value-to->curr));
+					if (toId==end) return currentCapacity[toId];
+					enQueue(toId);
+				}
+			
+
+			}
+
+
+		}
+
+
+	}
+	return 0;
+}
+
+
+
+
+int edmondsKarp(int start, int end){
+	int max = 0;
+	while (1){
+		int flow = bfs(start, end);
+		if (flow==0) break;
+		max+=flow;
+		int curr = end;
+		while(curr!=start){
+			int previous=parentList[curr];
+			link temp = list[previous];
+			while(temp->id!=curr) temp = temp->next;
+			temp->curr+=flow;
+			temp = list[curr];
+			while(temp->id!=previous) temp = temp->next;
+			temp->curr-=flow;
+			curr=previous;
+
+		}
+
+	}
+	return max;
+
+}
+
+
+
+
 
 int main(){
 	
@@ -81,7 +158,9 @@ int main(){
 
 	if (h<1 || w<1) return -1;
 
-	list = (link*) malloc(sizeof(link*)*((h*w)+2));
+	list = (link*) malloc(sizeof(link)*((h*w)+2));
+	parentList = (int) malloc(sizeof(int)*((h*w)+2));
+	currentCapacity = (int) malloc(sizeof(int)*((h*w)+2));
 
 	int i;
 	int j;
