@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#define MAX 999
 
 typedef struct{			//Do we really need this?
 	int id;
@@ -45,7 +46,7 @@ void enQueue(int v){
 
 int deQueue(){
 	point temp = queue->head;
-	if (temp==NULL) return NULL;
+	//if (temp==NULL) return NULL;
 	queue->head=temp->next;
 	int t=temp->id;
 	free(temp);
@@ -97,7 +98,7 @@ int bfs(int start, int end){
 	enQueue(start);
 
 	parentList[start]=-2;
-	currentCapacity[start]=999;
+	currentCapacity[start]=MAX;
 
 	while(!isEmpty()){
 		int curr = deQueue();
@@ -111,7 +112,7 @@ int bfs(int start, int end){
 					if (toId==end) return currentCapacity[toId];
 					enQueue(toId);
 				}
-			
+			to=to->next;
 
 			}
 
@@ -136,11 +137,11 @@ int edmondsKarp(int start, int end){
 		while(curr!=start){
 			int previous=parentList[curr];
 			link temp = list[previous];
-			while(temp->nodeId!=curr) temp = temp->next;
-			temp->curr+=flow;
+			while(temp!=NULL && temp->nodeId!=curr) temp = temp->next;
+			if (temp!=NULL) temp->curr+=flow;
 			temp = list[curr];
-			while(temp->nodeId!=previous) temp = temp->next;
-			temp->curr-=flow;
+			while(temp!=NULL && temp->nodeId!=previous) temp = temp->next;
+			if (temp!=NULL) temp->curr-=flow;
 			curr=previous;
 
 		}
@@ -154,8 +155,8 @@ int edmondsKarp(int start, int end){
 void dfs(int s){
 	position[s]='P';
 	link to = list[s];
-	while(to->nodeId!=NULL){
-		if (position[to->nodeId]=='C' && to->value!=to->curr){
+	while(to->next!=NULL){
+		if (position[to->nodeId]=='C' && to->curr>0){
 			dfs(to->nodeId);
 		}
 		to=to->next;
@@ -177,7 +178,7 @@ int main(){
 	parentList = (int*) malloc(sizeof(int)*((h*w)+2));
 	currentCapacity = (int*) malloc(sizeof(int)*((h*w)+2));
 	queue = (BFList*) malloc(sizeof(BFList));
-	position = (char *) malloc(sizeof(char)*(h*w));
+	position = (char *) malloc(sizeof(char)*(h*w)+2);
 
 	int i;
 	int j;
@@ -216,11 +217,15 @@ int main(){
 
 	edmondsKarp(h*w, h*w+1);
 
+	//printf("Fiz o Karps\n");
+
 	memset(position, 'C', sizeof(position[0])*(h*w)+2);
 
 	dfs(w*h);
 
-	position[h*w]='C';
+	//printf("Fiz a dfs\n");
+
+	//position[h*w]='C';
 
 	int maxFlow=0;
 
@@ -239,7 +244,7 @@ int main(){
 	printf("\n");
 	for(i=0;i<h;i++){
 		for(j=0; j<w;j++){
-			printf("%s ", position[(i*w)+j]);
+			printf("%c ", position[(i*w)+j]);
 		}
 		printf("\n");
 	}
