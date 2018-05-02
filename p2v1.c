@@ -37,8 +37,9 @@ int * currentCapacity;
 char * position;
 
 void enQueue(int v){
-	point temp = (point) malloc(sizeof(point));
+	point temp = (point) malloc(sizeof(struct vert));
 	temp->id=v;
+	temp->next=NULL;
 	if (queue->head==NULL){queue->head=temp;}
 	else {queue->tail->next=temp;}
 	queue->tail=temp;
@@ -48,6 +49,7 @@ int deQueue(){
 	point temp = queue->head;
 	//if (temp==NULL) return NULL;
 	queue->head=temp->next;
+	if (queue->head==NULL) queue->tail=NULL;
 	int t=temp->id;
 	free(temp);
 	return t;
@@ -68,7 +70,7 @@ int min(int a, int b){
 
 
 void moreEdge(int s, int d, int p){
-	link temp = (link) malloc(sizeof(link));
+	link temp = (link) malloc(sizeof(struct chain));
 	temp->value=p;
 	temp->nodeId=d;
 	link ref = list[s];
@@ -155,8 +157,8 @@ int edmondsKarp(int start, int end){
 void dfs(int s){
 	position[s]='P';
 	link to = list[s];
-	while(to->next!=NULL){
-		if (position[to->nodeId]=='C' && to->curr>0){
+	while(to!=NULL){
+		if (position[to->nodeId]=='C' && to->value==to->curr){
 			dfs(to->nodeId);
 		}
 		to=to->next;
@@ -190,6 +192,7 @@ int main(){
 			addEdge(h*w, i*w+j, t);
 		}
 	}
+
 
 	for(i=0;i<h;i++){
 		for(j=0;j<w;j++){
