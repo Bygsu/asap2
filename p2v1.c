@@ -158,7 +158,7 @@ void dfs(int s){
 	position[s]='P';
 	link to = list[s];
 	while(to!=NULL){
-		if (position[to->nodeId]=='C' && to->value==to->curr){
+		if (position[to->nodeId]=='C' && to->value - to->curr > 0){
 			dfs(to->nodeId);
 		}
 		to=to->next;
@@ -235,7 +235,7 @@ int main(){
 	for (i=0; i<(h*w)+2; i++){
 		link help = list[i];
 		while(help!=NULL){
-			if(position[i]!=position[help->nodeId]){
+			if(position[i] == 'P' && position[help->nodeId] == 'C'){
 				maxFlow+=help->value;
 			}
 			help=help->next;
